@@ -1,55 +1,141 @@
-// DayColumn.jsx
 import React from 'react';
-// Import a charting component (e.g., from recharts) for the Donut/Pie chart
-// import { PieChart, Pie, Cell } from 'recharts'; 
 
-const DayColumn = ({ day, date, progress, tasks }) => {
+const DayColumn = ({
+  day,
+  date,
+  progress,
+  tasks,
+  onAddTask,
+  onEditTask,
+  onDeleteTask,
+}) => {
   const completedCount = tasks.filter(t => t.completed).length;
   const notCompletedCount = tasks.length - completedCount;
 
-  // Placeholder for the Donut Chart rendering
-  // You would replace this with actual chart library code
-  const DonutChartPlaceholder = () => (
-    <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: `conic-gradient(#5cb85c 0 ${progress}%, #d9edf7 ${progress}% 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '10px auto' }}>
-      <div style={{ background: 'white', width: '80px', height: '80px', borderRadius: '50%', textAlign: 'center', lineHeight: '80px', fontWeight: 'bold' }}>
+  const DonutChart = () => (
+    <div className="relative w-24 h-24 mx-auto my-4">
+      <div
+        className="absolute inset-0 rounded-full border-4 border-black"
+        style={{
+          background: `conic-gradient(#000 0 ${progress}%, #e5e5e5 ${progress}% 100%)`,
+        }}
+      />
+      <div className="absolute inset-1 rounded-full bg-white shadow-inner flex items-center justify-center font-bold text-lg">
         {progress}%
       </div>
     </div>
   );
 
   return (
-    <div className="day-column" style={{ flex: 1, padding: '10px', borderRight: '1px solid #eee' }}>
-      <div className="day-header" style={{ backgroundColor: '#5cb85c', color: 'white', padding: '10px', textAlign: 'center', borderRadius: '5px 5px 0 0' }}>
-        <div className="day-name" style={{ fontWeight: 'bold' }}>{day}</div>
-        <div className="day-date" style={{ fontSize: '0.8em' }}>{date}</div>
+    <div className="
+      day-column flex-1 min-w-0
+      bg-white rounded-xl
+      border-2 border-black
+      shadow-md
+      hover:shadow-xl hover:-translate-y-1
+      transition-all duration-200
+    ">
+      {/* Header */}
+      <div className="bg-black text-white rounded-t-xl p-3 text-center">
+        <div className="text-xs tracking-widest opacity-80">DAY</div>
+        <div className="text-xl font-extrabold">{day.toUpperCase()}</div>
+        <div className="text-xs opacity-70">{date}</div>
       </div>
 
-      <div className="progress-chart">
-        <DonutChartPlaceholder />
+      {/* Progress */}
+      <div className="px-3">
+        <DonutChart />
+
+        <div className="text-center mb-2">
+          <span className="inline-block px-3 py-1 text-xs font-bold border border-black rounded-full">
+            LEVEL {Math.floor(progress / 10) + 1}
+          </span>
+        </div>
       </div>
 
-      <div className="tasks-section">
-        <div className="tasks-title" style={{ backgroundColor: '#5cb85c', color: 'white', padding: '5px', textAlign: 'center', fontWeight: 'bold' }}>Tasks</div>
-        <ul className="task-list" style={{ listStyle: 'none', padding: 0, margin: '5px 0' }}>
+      {/* Action Buttons */}
+      <div className="flex justify-center gap-2 px-3 mb-2">
+        <button
+          onClick={() => onAddTask?.(day)}
+          className="
+            px-2 py-1 text-xs font-bold
+            border border-black rounded
+            hover:bg-black hover:text-white
+            transition
+          "
+        >
+          ➕ ADD
+        </button>
+
+        <button
+          onClick={() => onEditTask?.(day)}
+          className="
+            px-2 py-1 text-xs font-bold
+            border border-black rounded
+            hover:bg-black hover:text-white
+            transition
+          "
+        >
+          ✏️ EDIT
+        </button>
+
+        <button
+          onClick={() => onDeleteTask?.(day)}
+          className="
+            px-2 py-1 text-xs font-bold text-red-600
+            border border-red-600 rounded
+            hover:bg-red-600 hover:text-white
+            transition
+          "
+        >
+          🗑 DELETE
+        </button>
+      </div>
+
+      {/* Tasks */}
+      <div className="px-3">
+        <div className="bg-black text-white text-xs font-bold py-1.5 text-center rounded-md mb-2">
+          QUESTS ({tasks.length})
+        </div>
+
+        <ul className="space-y-1.5">
           {tasks.map(task => (
-            <li key={task.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dotted #eee' }}>
-              <span style={{ textDecoration: task.completed ? 'line-through' : 'none', color: task.completed ? '#aaa' : '#333' }}>
+            <li
+              key={task.id}
+              className="
+                flex items-center justify-between
+                text-sm px-2 py-1.5
+                border border-gray-300
+                rounded-md bg-gray-50
+              "
+            >
+              <span className={`flex items-center gap-1 ${
+                task.completed ? 'line-through text-gray-500' : 'font-medium'
+              }`}>
+                {task.completed ? '✅' : '⬜'}
                 {task.name}
               </span>
-              <input type="checkbox" checked={task.completed} readOnly />
+
+              <button
+                onClick={() => onEditTask?.(day, task)}
+                className="text-xs underline"
+              >
+                Edit
+              </button>
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="summary-footer" style={{ marginTop: '10px', padding: '10px 0', borderTop: '1px solid #eee' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>Completed</span>
-          <span style={{ fontWeight: 'bold', color: '#5cb85c' }}>{completedCount}</span>
+      {/* Footer / XP */}
+      <div className="mt-3 bg-gray-100 rounded-b-xl border-t-2 border-black px-3 py-2 text-xs">
+        <div className="flex justify-between">
+          <span>XP GAINED</span>
+          <span className="font-bold">{completedCount * 10}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>Not Completed</span>
-          <span style={{ fontWeight: 'bold', color: '#d9534f' }}>{notCompletedCount}</span>
+        <div className="flex justify-between text-red-600">
+          <span>XP LOST</span>
+          <span className="font-bold">{notCompletedCount * 5}</span>
         </div>
       </div>
     </div>

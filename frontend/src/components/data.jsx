@@ -28,6 +28,66 @@ const tasksData = [
       { id: 6, name: 'Call Grey', completed: true },
       { id: 7, name: 'Renew gym membership', completed: false },
     ],
+  },  {
+    day: 'tue',
+    date: '02.11.2025',
+    progress: 67,
+    tasks: [
+      { id: 1, name: 'Create a development plan', completed: true },
+      { id: 2, name: 'Redo script', completed: true },
+      { id: 3, name: 'Analyze the marketing report', completed: true },
+      { id: 4, name: 'Finish the project brief: Clio-31', completed: false },
+      { id: 5, name: 'Set up website traffic', completed: false },
+      { id: 6, name: 'Pay the targeting specialist', completed: true },
+    ],
+  },  {
+    day: 'wed',
+    date: '02.11.2025',
+    progress: 67,
+    tasks: [
+      { id: 1, name: 'Create a development plan', completed: true },
+      { id: 2, name: 'Redo script', completed: true },
+      { id: 3, name: 'Analyze the marketing report', completed: true },
+      { id: 4, name: 'Finish the project brief: Clio-31', completed: false },
+      { id: 5, name: 'Set up website traffic', completed: false },
+      { id: 6, name: 'Pay the targeting specialist', completed: true },
+    ],
+  },  {
+    day: 'thru',
+    date: '02.11.2025',
+    progress: 67,
+    tasks: [
+      { id: 1, name: 'Create a development plan', completed: true },
+      { id: 2, name: 'Redo script', completed: true },
+      { id: 3, name: 'Analyze the marketing report', completed: true },
+      { id: 4, name: 'Finish the project brief: Clio-31', completed: false },
+      { id: 5, name: 'Set up website traffic', completed: false },
+      { id: 6, name: 'Pay the targeting specialist', completed: true },
+    ],
+  },  {
+    day: 'friday',
+    date: '02.11.2025',
+    progress: 67,
+    tasks: [
+      { id: 1, name: 'Create a development plan', completed: true },
+      { id: 2, name: 'Redo script', completed: true },
+      { id: 3, name: 'Analyze the marketing report', completed: true },
+      { id: 4, name: 'Finish the project brief: Clio-31', completed: false },
+      { id: 5, name: 'Set up website traffic', completed: false },
+      { id: 6, name: 'Pay the targeting specialist', completed: true },
+    ],
+  },  {
+    day: 'satday',
+    date: '02.11.2025',
+    progress: 67,
+    tasks: [
+      { id: 1, name: 'Create a development plan', completed: true },
+      { id: 2, name: 'Redo script', completed: true },
+      { id: 3, name: 'Analyze the marketing report', completed: true },
+      { id: 4, name: 'Finish the project brief: Clio-31', completed: false },
+      { id: 5, name: 'Set up website traffic', completed: false },
+      { id: 6, name: 'Pay the targeting specialist', completed: true },
+    ],
   },
   // ... (Add all other days)
 ];
