@@ -8,6 +8,7 @@ export const toggleHabit = async (req, res) => {
   try {
     const { habitId } = req.params;
     const { date } = req.body; // YYYY-MM-DD
+    const userId = req.user.id;
 
     if (!date) {
       return res.status(400).json({ message: "Date required" });
@@ -16,7 +17,7 @@ export const toggleHabit = async (req, res) => {
     // ensure habit exists
     const habit = await Habit.findOne({
       _id: habitId,
-      // user: userId,
+      user: userId,
       isActive: true,
     });
 
@@ -26,7 +27,7 @@ export const toggleHabit = async (req, res) => {
 
     const existing = await HabitLog.findOne({
       habit: habitId,
-      // user: userId,
+      user: userId,
       date,
     });
 
@@ -38,7 +39,7 @@ export const toggleHabit = async (req, res) => {
 
     const log = await HabitLog.create({
       habit: habitId,
-      // user: userId,
+      user: userId,
       date,
       completed: true,
     });
@@ -54,6 +55,7 @@ export const toggleHabit = async (req, res) => {
 export const getWeekLogs = async (req, res) => {
   try {
     const { startDate, endDate } = req.query; // YYYY-MM-DD
+    const userId = req.user.id;
 
     if (!startDate || !endDate) {
       return res
@@ -62,8 +64,8 @@ export const getWeekLogs = async (req, res) => {
     }
 
     const logs = await HabitLog.find({
-      // user: userId
       date: { $gte: startDate, $lte: endDate },
+      user: userId,
     }).populate("habit");
 
     res.json(logs);

@@ -1,142 +1,145 @@
-import React from 'react';
+import React, { useEffect, useState, useMemo } from "react";
+import todoApi from "../api/todo.api";
+import { Userapi } from "../api/User.api";
 
-const DayColumn = ({
-  day,
-  date,
-  progress,
-  tasks,
-  onAddTask,
-  onEditTask,
-  onDeleteTask,
-}) => {
-  const completedCount = tasks.filter(t => t.completed).length;
-  const notCompletedCount = tasks.length - completedCount;
+const DayColumn = ({ date, dayName }) => {
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [title, setTitle] = useState("");
+  const [showInput, setShowInput] = useState(false);
 
-  const DonutChart = () => (
-    <div className="relative w-24 h-24 mx-auto my-4">
-      <div
-        className="absolute inset-0 rounded-full border-4 border-black"
-        style={{
-          background: `conic-gradient(#000 0 ${progress}%, #e5e5e5 ${progress}% 100%)`,
-        }}
-      />
-      <div className="absolute inset-1 rounded-full bg-white shadow-inner flex items-center justify-center font-bold text-lg">
-        {progress}%
-      </div>
-    </div>
-  );
+  // 1. Load tasks for the day
+  useEffect(() => {
+    const fetchTodo = async () => {
+      try {
+        const res = await todoApi.post("/day", { date });
+        setTasks(res.data.tasks || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTodo();
+  }, [date]);
+
+  // 2. Derived stats
+  const stats = useMemo(() => {
+    const safeTasks = tasks.filter(Boolean);
+    const total = safeTasks.length;
+    const completed = safeTasks.filter((t) => t.completed).length;
+    const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
+    return { total, completed, progress };
+  }, [tasks]);
+
+  // 3. Derived XP
+  const XP = stats.completed * 10;
+
+  // 4. Toggle task completion
+  const toggleTask = async (taskId) => {
+    try {
+      const task = tasks.find((t) => t._id === taskId);
+      const isCompleting = !task.completed;
+
+      setTasks((prev) =>
+        prev.map((t) =>
+          t._id === taskId ? { ...t, completed: !t.completed } : t
+        )
+      );
+
+      await todoApi.put(`/task/${taskId}`, { date });
+
+      // Add/Remove XP
+      if (isCompleting) {
+        await Userapi.put("/auth/addXp");
+      } else {
+        await Userapi.put("/auth/removeXp");
+      }
+    } catch (err) {
+      console.error("Toggle Failed", err);
+    }
+  };
+
+  // 5. Add task
+  const handleAddTask = async (e) => {
+    if (e.key === "Enter" && title.trim()) {
+      try {
+        const res = await todoApi.post("/task", { date, title });
+        if (res.data.task) {
+          setTasks((prev) => [...prev, res.data.task]);
+        }
+        setTitle("");
+        setShowInput(false);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
 
   return (
-    <div className="
-      day-column flex-1 min-w-0
-      bg-white rounded-xl
-      border-2 border-black
-      shadow-md
-      hover:shadow-xl hover:-translate-y-1
-      transition-all duration-200
-    ">
+    <div className="min-w-[300px] bg-white/30 backdrop-blur-md border border-gray-300 shadow-md rounded-md flex flex-col">
       {/* Header */}
-      <div className="bg-black text-white rounded-t-xl p-3 text-center">
-        <div className="text-xs tracking-widest opacity-80">DAY</div>
-        <div className="text-xl font-extrabold">{day.toUpperCase()}</div>
-        <div className="text-xs opacity-70">{date}</div>
-      </div>
-
-      {/* Progress */}
-      <div className="px-3">
-        <DonutChart />
-
-        <div className="text-center mb-2">
-          <span className="inline-block px-3 py-1 text-xs font-bold border border-black rounded-full">
-            LEVEL {Math.floor(progress / 10) + 1}
-          </span>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-2 px-3 mb-2">
-        <button
-          onClick={() => onAddTask?.(day)}
-          className="
-            px-2 py-1 text-xs font-bold
-            border border-black rounded
-            hover:bg-black hover:text-white
-            transition
-          "
-        >
-          ➕ ADD
-        </button>
-
-        <button
-          onClick={() => onEditTask?.(day)}
-          className="
-            px-2 py-1 text-xs font-bold
-            border border-black rounded
-            hover:bg-black hover:text-white
-            transition
-          "
-        >
-          ✏️ EDIT
-        </button>
-
-        <button
-          onClick={() => onDeleteTask?.(day)}
-          className="
-            px-2 py-1 text-xs font-bold text-red-600
-            border border-red-600 rounded
-            hover:bg-red-600 hover:text-white
-            transition
-          "
-        >
-          🗑 DELETE
-        </button>
+      <div className="bg-black/60 text-white p-4 text-center rounded-t-md">
+        <h2 className="text-xl font-bold tracking-tight">{dayName}</h2>
       </div>
 
       {/* Tasks */}
-      <div className="px-3">
-        <div className="bg-black text-white text-xs font-bold py-1.5 text-center rounded-md mb-2">
-          QUESTS ({tasks.length})
-        </div>
+      <div className="p-4 flex-1 space-y-3 min-h-[300px]">
+        {!loading &&
+          tasks.map(
+            (task) =>
+              task && (
+                <div
+                  key={task._id}
+                  onClick={() => toggleTask(task._id)}
+                  className={`flex items-center gap-3 p-3 border rounded cursor-pointer transition ${
+                    task.completed
+                      ? "bg-green-100 line-through text-gray-500"
+                      : "bg-white/70 hover:bg-white/90"
+                  }`}
+                >
+                  <div
+                    className={`w-6 h-6 flex items-center justify-center border rounded ${
+                      task.completed ? "bg-green-400" : "bg-white border-gray-400"
+                    }`}
+                  >
+                    {task.completed && "✓"}
+                  </div>
+                  <span className="flex-1 text-lg font-medium">{task.title}</span>
+                </div>
+              )
+          )}
 
-        <ul className="space-y-1.5">
-          {tasks.map(task => (
-            <li
-              key={task.id}
-              className="
-                flex items-center justify-between
-                text-sm px-2 py-1.5
-                border border-gray-300
-                rounded-md bg-gray-50
-              "
-            >
-              <span className={`flex items-center gap-1 ${
-                task.completed ? 'line-through text-gray-500' : 'font-medium'
-              }`}>
-                {task.completed ? '✅' : '⬜'}
-                {task.name}
-              </span>
+        <button
+          onClick={() => setShowInput(true)}
+          className="w-full py-2 border border-dashed border-gray-400 rounded font-bold text-sm hover:border-black transition"
+        >
+          + ADD NEW QUEST
+        </button>
 
-              <button
-                onClick={() => onEditTask?.(day, task)}
-                className="text-xs underline"
-              >
-                Edit
-              </button>
-            </li>
-          ))}
-        </ul>
+        {showInput && (
+          <input
+            autoFocus
+            onKeyDown={handleAddTask}
+            onChange={(e) => setTitle(e.target.value)}
+            value={title}
+            className="w-full border border-gray-400 p-2 rounded mt-2 outline-none"
+            placeholder="TYPE QUEST..."
+          />
+        )}
       </div>
 
-      {/* Footer / XP */}
-      <div className="mt-3 bg-gray-100 rounded-b-xl border-t-2 border-black px-3 py-2 text-xs">
-        <div className="flex justify-between">
-          <span>XP GAINED</span>
-          <span className="font-bold">{completedCount * 10}</span>
+      {/* XP / Progress */}
+      <div className="bg-gray-100/50 backdrop-blur-sm p-3 flex justify-between items-center text-sm font-bold rounded-b-md">
+        <span>XP: {XP}</span>
+        <div className="flex-1 ml-2 h-2 bg-gray-200 rounded overflow-hidden">
+          <div
+            className="h-full bg-green-400 transition-all"
+            style={{ width: `${stats.progress}%` }}
+          />
         </div>
-        <div className="flex justify-between text-red-600">
-          <span>XP LOST</span>
-          <span className="font-bold">{notCompletedCount * 5}</span>
-        </div>
+        <span className="ml-2">{stats.progress}%</span>
       </div>
     </div>
   );

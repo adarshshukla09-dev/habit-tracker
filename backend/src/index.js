@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import habit from "./routes/Habit.routes.js";
 import todos from "./routes/dailyTodos.routes.js";
-// import user from "./routes/user.routes.js";
+import user from "./routes/user.routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -24,6 +24,7 @@ app.use(
 // Routes
 app.use("/api/habit", habit);
 app.use("/api/todos", todos);
+app.use("/api/auth", user);
 // app.use("/api/user", user);
 
 const PORT = process.env.PORT || 5000;

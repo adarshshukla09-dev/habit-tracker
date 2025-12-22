@@ -2,3 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  background-image: url('/bg.jpg');
+  background-size: cover;       /* Cover entire viewport */
+  background-repeat: no-repeat; /* No tiling */
+  background-position: center;  /* Center the image */
+  min-height: 100vh;            /* Ensure body fills screen height */
+}

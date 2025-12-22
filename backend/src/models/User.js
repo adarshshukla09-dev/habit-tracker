@@ -12,6 +12,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  XP: {
+    type: Number,
+    default: 0,
+  },
 });
 const User = new mongoose.model("User", UserSchema);
 export default User;

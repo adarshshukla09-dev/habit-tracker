@@ -1,21 +1,23 @@
+import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
-
-const genrateToken = (userId) => {
+const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
-export async function register(req, res) {
+export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const isMatch = await User.findOne({ email });
-    if (isMatch) {
-      return res.status(400).json({ message: "user already exist " });
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: "User Already exits" });
     }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const user = await User.create({ name, email, password });
-    const token = genrateToken(user.id);
+
+    user = await User.create({ name, email, password: hashedPassword });
+
+    const token = generateToken(user.id);
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -26,40 +28,47 @@ export async function register(req, res) {
     });
 
     res.status(201).json({
-      message: "User registered ",
+      message: "User registered & logged in",
       user: { id: user.id, name: user.name, email: user.email },
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
   }
-}
-export async function login(req, res) {
+};
+
+export const Login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne(email).select("+password");
-    if (!user) return res.status(500).json({ message: "user donot exist" });
+    let user = await User.findOne({ email }).select("+password");
+
+    if (!user)
+      return res.status(500).json({ message: "Internal server error" });
 
     const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(500).json({ message: "incorrect password" });
 
-    const token = genrateToken(user.id);
+    const token = generateToken(user.id);
+
     res.cookie("token", token, {
-      httpOnly: true,
+      httpOnly: true, // Makes the cookie inaccessible to client-side JS (more secure)
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-
       sameSite: "None",
     });
 
-    res.status(201).json({
-      message: "User logged in",
+    // --- Change the response body to not include the token ---
+    res.status(200).json({
+      message: "Login successful",
       user: { id: user.id, name: user.name, email: user.email },
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
   }
-}
+};
+// authController.js
 export const getUser = async (req, res) => {
   try {
     if (!req.user)
@@ -72,5 +81,49 @@ export const getUser = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const logout = (req, res) => {
+  res.clearCookie("token");
+  res.json({ message: "Logged out" });
+};
+export const getXP = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("XP");
+    res.json({ XP: user.XP });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const AddXP = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $inc: { XP: 10 } },
+      { new: true }
+    );
+
+    res.json({ XP: user.XP });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+export const removeXP = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Prevent negative XP
+    user.XP = Math.max(0, user.XP - 10);
+    await user.save();
+
+    res.json({ XP: user.XP });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

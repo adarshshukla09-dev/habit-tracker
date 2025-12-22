@@ -3,22 +3,23 @@ import {
   createHabit,
   getHabits,
   deleteHabit,
-  updateHabits,
+  updateHabit,
 } from "../controllers/Habit.controller.js";
 
 import {
   toggleHabit,
   getWeekLogs,
 } from "../controllers/habitLog.controller.js";
+import protect from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/c", createHabit);
-router.get("/", getHabits);
-router.put("/:habitId", updateHabits);
-router.delete("/:habitId", deleteHabit);
+router.post("/c", protect, createHabit);
+router.get("/", protect, getHabits);
+router.put("/:habitId", protect, updateHabit);
+router.delete("/:habitId", protect, deleteHabit);
 
-router.post("/:habitId/toggle", toggleHabit);
-router.get("/logs/week", getWeekLogs);
+router.post("/:habitId/toggle", protect, toggleHabit);
+router.get("/logs/week", protect, getWeekLogs);
 
 export default router;

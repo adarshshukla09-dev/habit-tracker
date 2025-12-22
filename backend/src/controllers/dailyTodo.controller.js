@@ -1,75 +1,96 @@
 import DailyTodo from "../models/dailyTodo.js";
 
-const userId = "64b000000000000000000001";
+const normalizeDate = (date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
 
-// CREATE / GET DAY
 export const getOrCreateDay = async (req, res) => {
   try {
     const { date } = req.body;
-
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-
-    let day = await DailyTodo.findOne({ user: userId, date: d });
+    const d = normalizeDate(date);
+    let day = await DailyTodo.findOne({ user: req.user.id, date: d });
 
     if (!day) {
-      day = await DailyTodo.create({
-        user: userId,
-        date: d,
-        tasks: [],
-      });
+      day = await DailyTodo.create({ user: req.user.id, date: d, tasks: [] });
     }
-
     res.json(day);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ADD TASK
 export const addTask = async (req, res) => {
   try {
-    const { dayId } = req.params;
-    const { title } = req.body;
-
-    const day = await DailyTodo.findOne({ _id: dayId, user: userId });
-    if (!day) return res.status(404).json({ message: "Day not found" });
-
+    const { date, title } = req.body;
+    const day = await DailyTodo.findOne({
+      user: req.user.id,
+      date: normalizeDate(date),
+    });
     day.tasks.push({ title });
     await day.save();
-
-    res.json(day);
+    // Return the specific new task for the frontend
+    res.json({ task: day.tasks[day.tasks.length - 1] });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// TOGGLE TASK
 export const toggleTask = async (req, res) => {
   try {
-    const { dayId, taskIndex } = req.params;
+    const { taskIndex } = req.params; // This is actually the ID from the URL
+    const { date } = req.body;
+    const d = normalizeDate(date);
+    const userId = req.user.id;
 
-    const day = await DailyTodo.findOne({ _id: dayId, user: userId });
-    day.tasks[taskIndex].completed = !day.tasks[taskIndex].completed;
+    const day = await DailyTodo.findOne({ user: userId, date: d });
+    if (!day) return res.status(404).json({ message: "Day not found" });
 
+    // Use .id() to find by MongoDB _id instead of array index
+    const task = day.tasks.id(taskIndex);
+    if (!task) return res.status(404).json({ message: "Task not found" });
+
+    task.completed = !task.completed;
     await day.save();
+
+    res.json(day);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const deleteTask = async (req, res) => {
+  try {
+    const { taskIndex } = req.params; // This is the ID
+    const { date } = req.body;
+    const d = normalizeDate(date);
+    const userId = req.user.id;
+
+    const day = await DailyTodo.findOne({ user: userId, date: d });
+    if (!day) return res.status(404).json({ message: "Day not found" });
+
+    // Mongoose way to remove a subdocument by ID
+    day.tasks.pull({ _id: taskIndex });
+    await day.save();
+
     res.json(day);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// DELETE TASK
-export const deleteTask = async (req, res) => {
+export const getAllDays = async (req, res) => {
   try {
-    const { dayId, taskIndex } = req.params;
+    const userId = req.user.id;
+    // Finds all days and sorts them by date (oldest first)
+    const days = await DailyTodo.find({ user: userId }).sort({ date: 1 });
 
-    const day = await DailyTodo.findOne({ _id: dayId, user: userId });
-    day.tasks.splice(taskIndex, 1);
-
-    await day.save();
-    res.json(day);
+    res.json(days);
   } catch (err) {
+    console.log(err.message);
+
     res.status(500).json({ message: err.message });
   }
 };

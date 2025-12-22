@@ -1,105 +1,102 @@
-// Dashboard.jsx
-import React from 'react';
-import DayColumn from '../components/DayColumn.jsx';
-// Ensure these imports are still correct
-import { tasksData, overallData, habitsData } from '../components/data.jsx'; 
-import HabitTracker from "../components/HabitTracker.jsx"
+import React, { useEffect, useState } from "react";
+import Week from "../components/Week";
+import HabitTracker from "../components/HabitTracker";
+import { useAuth } from "../Context/UserContext";
+import { Userapi } from "../api/User.api";
 
-const MINECRAFT_FONT_CLASS = 'font-mono tracking-wider';
-const BORDER_COLOR_CLASS = 'border-black';
-const BACKGROUND_LIGHT_CLASS = 'bg-white';
-const BACKGROUND_DARK_CLASS = 'bg-gray-300'; // Mapping #CCCCCC
+// XP helpers
+const getLevel = (xp) => Math.floor(xp / 100) + 1;
+const getXpProgress = (xp) => xp % 100;
+const getNextLevelXp = (xp) => 100 - (xp % 100);
 
-const Dashboard = () => {
-  return (
-    <div 
-      className={`dashboard-container p-3 ${MINECRAFT_FONT_CLASS} max-w-[1400px] mx-auto my-8 border-4 ${BORDER_COLOR_CLASS} ${BACKGROUND_LIGHT_CLASS}`}
-    >
+export default function Dashboard() {
+  const { user } = useAuth();
+  const [XP, setXP] = useState(0);
 
-      {/* --- Top Section: Quote, Overall Progress --- */}
-      <div className={`top-section flex border-b-4 ${BORDER_COLOR_CLASS}`}>
-        
-        {/* Left Side: Quote & Start Date */}
-        <div className={`flex-1 p-5 ${BACKGROUND_DARK_CLASS} border-r-4 ${BORDER_COLOR_CLASS}`}>
-            <h1 className="m-0 text-xl font-bold text-black">"Inspiration comes only during work"</h1>
-            <p className="mt-2 font-bold text-sm">
-              Week Start: <span className={`${BACKGROUND_LIGHT_CLASS} px-1 py-0.5 border-2 ${BORDER_COLOR_CLASS}`}>02.11.2025</span>
-            </p>
-        </div>
+  useEffect(() => {
+    if (!user) return;
 
-        {/* Middle Section: Overall Progress Bar & Charts (Takes up remaining horizontal space) */}
-        <div className="flex-2 p-4 text-center flex-grow">
-            <h3 className="mt-0 mb-2 text-lg font-bold text-black">OVERALL PROGRESS</h3>
-            <div className={`flex justify-around items-center border-2 ${BORDER_COLOR_CLASS} p-2`}>
-                <div className="w-[60%] border-r border-gray-500 pr-2">
-                  Placeholder: Weekly Bar Chart
-                </div> 
-                <div className="w-[40%]">
-                    <div className="text-4xl font-extrabold text-black leading-none">
-                      {overallData.progressPercentage}%
-                    </div>
-                    <div className="text-xs mt-1">{overallData.tasksCompleted} / {overallData.tasksTotal} Completed</div>
-                </div>
-            </div>
-        </div>
-      </div>
-      
-      {/* --- Main Content: Weekly Summary (Now takes full width) --- */}
-      <div className="main-content m-2 flex">
-        
-        {/* Weekly Summary (7 Columns) - Takes full width now */}
-        <div className="weekly-summary flex w-full gap-4 px-4">
-  {tasksData.map((dayData) => (
-    <DayColumn
-      key={dayData.day}
-      day={dayData.day}
-      date={dayData.date}
-      progress={dayData.progress}
-      tasks={dayData.tasks}
-      className="rounded-lg"
-      isLast={dayData.day === tasksData[tasksData.length - 1].day}
-    />
-  ))}
-</div>
-</div>
+    const fetchXp = async () => {
+      try {
+        const res = await Userapi.get("/auth/getXp");
+        setXP(res.data.XP);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
+    fetchXp();
+  }, [user]);
 
-      {/* --- Habit Tracker (New Bottom Section) --- */}
-     <div
-  className={`
-    habit-tracker-wrapper 
-    w-9/10 my-4 m-auto
-    rounded-lg overflow-hidden 
-    border-4 ${BORDER_COLOR_CLASS}
-    shadow-md
-  `}
->
-  {/* Header */}
-  <div
-    className={`
-      px-6 py-4 
-      text-center 
-      ${BACKGROUND_DARK_CLASS} 
-      border-b-4 ${BORDER_COLOR_CLASS}
-    `}
-  >
-    <h3 className="text-lg font-bold tracking-wide text-black">
-      Habit Tracker Summary
-    </h3>
-    <p className="mt-1 text-sm text-black/70">
-      Track your daily progress at a glance
-    </p>
-  </div>
+  const statusText =
+    XP >= 300
+      ? "UNSTOPPABLE ⚔️"
+      : XP >= 150
+      ? "ON A ROLL 🔥"
+      : "JUST GETTING STARTED 🌱";
 
-  {/* Content */}
-  <div className="p-6 bg-white">
-    <HabitTracker habits={habitsData} />
-  </div>
-</div>
-      </div>
+  return (
+    <div
+      className="min-h-screen bg-cover bg-center bg-fixed"
+      style={{ backgroundImage: "url('/t.jpg')" }}
+    >
+      {/* Optional overlay */}
+      <div className="min-h-screen bg-black/20">
+        <div className="p-6 w-full max-w-7xl mx-auto font-mono">
 
-    
-  );
-};
+          {/* ================= PLAYER HEADER ================= */}
+          <div className="bg-white/30 backdrop-blur-md border-4 border-black p-6 mb-10 shadow-[8px_8px_0px_black] flex flex-col md:flex-row justify-between gap-6">
 
-export default Dashboard;
+            {/* Player Info */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 border-4 border-black rounded-full bg-yellow-400 flex items-center justify-center text-xl font-black">
+                {user?.name?.[0]}
+              </div>
+
+              <div>
+                <h1 className="text-3xl font-black italic uppercase leading-none">
+                  {user?.name}
+                </h1>
+                <p className="text-xs font-black uppercase mt-1">
+                  Level {getLevel(XP)} Adventurer
+                </p>
+                <p className="text-xs font-bold uppercase mt-1">
+                  Status: {statusText}
+                </p>
+              </div>
+            </div>
+
+            {/* XP Stats */}
+            <div className="text-right min-w-[180px]">
+              <p className="text-xs font-black uppercase">Total XP</p>
+              <div className="text-4xl font-black leading-none">{XP}</div>
+
+              <div className="mt-3">
+                <div className="w-full h-2 border-2 border-black bg-white">
+                  <div
+                    className="h-full bg-green-400 transition-[width] duration-300"
+                    style={{ width: `${getXpProgress(XP)}%` }}
+                  />
+                </div>
+                <p className="text-[10px] font-black uppercase mt-1">
+                  {getNextLevelXp(XP)} XP to next level
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* ================= WEEK VIEW ================= */}
+          <section className="mb-14 bg-white/30 backdrop-blur-md p-4 rounded shadow">
+            <Week />
+          </section>
+
+          {/* ================= HABITS ================= */}
+      <section className="bg-white/30 backdrop-blur-md border-4 border-black p-6 shadow-[10px_10px_0px_black]">
+  <HabitTracker />
+</section>
+
+        </div>
+      </div>
+    </div>
+  );
+}
