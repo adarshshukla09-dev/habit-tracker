@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import Dashboard from "./Pages/Dashboard.jsx";
+import Dashboard from "./Context/Dashboard.jsx";
 import Login from "./Pages/Login.jsx";
 import Signup from "./Pages/Signup.jsx";
 import { AuthProvider } from "./Context/UserContext.jsx";
