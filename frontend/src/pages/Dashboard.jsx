@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Week from "../components/Week";
-import HabitTracker from "../components/HabitTracker";
-import { useAuth } from "../Context/UserContext";
-import { Userapi } from "../api/User.api";
+import Week from "../components/Week.jsx";
+import HabitTracker from "../components/HabitTracker.jsx";
+import { useAuth } from "../Context/UserContext.jsx";
+import { Userapi } from "../api/User.api.jsx";
 
 // XP helpers
 const getLevel = (xp) => Math.floor(xp / 100) + 1;

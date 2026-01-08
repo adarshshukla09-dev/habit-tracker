@@ -1,11 +1,11 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
-import Signup from "./pages/signup";
+import Dashboard from "./Pages/Dashboard.jsx";
+import Login from "./Pages/Login.jsx";
+import Signup from "./Pages/Signup.jsx";
 import { AuthProvider } from "./Context/UserContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import HomePage from "./pages/HomePage.jsx";
+import HomePage from "./Pages/HomePage.jsx";
 
 function App() {
   return (
@@ -24,8 +24,7 @@ function App() {
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
-              }
-            />
+              }/>
             <Route
               path="/"
               element={

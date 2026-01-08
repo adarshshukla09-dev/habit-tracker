@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import DayColumn from './DayColumn';
+import DayColumn from './DayColumn.jsx';
 import todoApi from "../api/todo.api";
 
 // Helper to get normalized date strings

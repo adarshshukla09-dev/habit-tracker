@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
-import todoApi from "../api/todo.api";
-import { Userapi } from "../api/User.api";
+import todoApi from "../api/todo.api.js";
+import { Userapi } from "../api/User.api.js";
 
 const DayColumn = ({ date, dayName }) => {
   const [tasks, setTasks] = useState([]);
