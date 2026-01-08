@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import DayColumn from './DayColumn.jsx';
-import todoApi from "../api/todo.api";
+import todoApi from "../api/todo.api.js";
 
 // Helper to get normalized date strings
 const getYYYYMMDD = (date) => date.toISOString().split("T")[0];
