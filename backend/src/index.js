@@ -19,7 +19,7 @@ app.use(
   cors({
     origin: "https://habit-tracker-liart-alpha.vercel.app",
     credentials: true,
-  })
+  }),
 );
 // Routes
 app.use("/api/habit", habit);
