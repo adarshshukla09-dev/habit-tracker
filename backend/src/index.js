@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
-import habit from "./routes/Habit.routes.js";
+import habit from "./routes/habit.routes.js";
 import todos from "./routes/dailyTodos.routes.js";
 import user from "./routes/user.routes.js";
 import cookieParser from "cookie-parser";
@@ -18,7 +18,6 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: "https://habit-tracker-liart-alpha.vercel.app",
-    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
